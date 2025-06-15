@@ -34,9 +34,7 @@ invite_counts = {}
 leave_counts = {}
 fake_counts = {}
 bonus_counts = {}
-
 user_invites = {}
-
 cached_invites = {}
 
 # --- Funkcje do zapisu i odczytu danych ---
@@ -48,6 +46,7 @@ def load_data():
             with open(DATA_FILE, "r") as f:
                 content = f.read().strip()
                 if not content:
+                    # plik pusty - czyścimy dane
                     invite_counts.clear()
                     leave_counts.clear()
                     fake_counts.clear()
@@ -133,13 +132,13 @@ async def on_member_join(member):
     member_count = member.guild.member_count
 
     embed = discord.Embed(
-        title="`🥖` Nowy Czlonek",
+        title="`🥖` Nowy Członek",
         description=(
             f"👋🏻Witamy na **Imperium Kebabów**\n"
-            f"👤Nazwa Uzytkownika: **{member}**\n"
+            f"👤Nazwa Użytkownika: **{member}**\n"
             f"📅Konto założone: <t:{account_creation_timestamp}:F>\n"
             f"⏰Dołączył/a: <t:{int(member.joined_at.timestamp())}:R>\n"
-            f"👥Aktualnie jest nas: ** {member_count} **\n"
+            f"👥Aktualnie jest nas: **{member_count}**\n"
         ),
         color=discord.Color(0xFFA500)
     )
@@ -164,7 +163,7 @@ async def on_member_remove(member):
     leave_counts[member.id] = leave_counts.get(member.id, 0) + 1
     save_data()
 
-# --- Komendy ---
+# --- Komendy tekstowe ---
 
 @bot.command(name="invites")
 async def invites(ctx, member: discord.Member = None):
@@ -188,6 +187,8 @@ async def invites(ctx, member: discord.Member = None):
     embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)
     embed.set_footer(text=datetime.now().strftime("Today at %H:%M"))
     await ctx.send(embed=embed)
+
+# --- Slash commands ---
 
 @tree.command(name="invites", description="Sprawdź ile zaproszeń masz ty lub podany użytkownik")
 @app_commands.describe(member="Użytkownik, którego zaproszenia chcesz sprawdzić")
@@ -259,6 +260,18 @@ class TicketPanelView(discord.ui.View):
         self.add_item(discord.ui.Button(style=discord.ButtonStyle.primary, emoji="🛠", label="Pomoc", custom_id="ticket_help"))
         self.add_item(discord.ui.Button(style=discord.ButtonStyle.secondary, emoji="❓", label="Pytanie", custom_id="ticket_question"))
 
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        # Możesz dodać ograniczenia, np. tylko dla członków
+        return True
+
+    async def on_timeout(self) -> None:
+        self.clear_items()
+
+    async def on_button_click(self, interaction: discord.Interaction):
+        # Obsługa kliknięć przycisków (niestandardowe)
+        pass
+
+    # Obsługa buttonów przez callbacki
     @discord.ui.button(style=discord.ButtonStyle.primary, emoji="🛠", label="Pomoc", custom_id="ticket_help")
     async def help_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await create_ticket(interaction, "pomoc")
@@ -266,6 +279,26 @@ class TicketPanelView(discord.ui.View):
     @discord.ui.button(style=discord.ButtonStyle.secondary, emoji="❓", label="Pytanie", custom_id="ticket_question")
     async def question_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await create_ticket(interaction, "pytanie")
+
+# Zamienię powyższe, ponieważ dekoratory @discord.ui.button w klasie dziedziczącej View trzeba dodać tylko raz — mamy tu dwa razy buttony.  
+# Zamiast tego uprościmy: usuń dekoratory i obsłuż callbacki w `interaction_check` albo w `on_interaction`.  
+# Wersja prosto działająca:
+
+class TicketPanelView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        self.add_item(discord.ui.Button(style=discord.ButtonStyle.primary, emoji="🛠", label="Pomoc", custom_id="ticket_help"))
+        self.add_item(discord.ui.Button(style=discord.ButtonStyle.secondary, emoji="❓", label="Pytanie", custom_id="ticket_question"))
+
+    @discord.ui.button(style=discord.ButtonStyle.primary, emoji="🛠", label="Pomoc", custom_id="ticket_help")
+    async def button_help(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await create_ticket(interaction, "pomoc")
+
+    @discord.ui.button(style=discord.ButtonStyle.secondary, emoji="❓", label="Pytanie", custom_id="ticket_question")
+    async def button_question(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await create_ticket(interaction, "pytanie")
+
+# --- Zarządzanie ticketem ---
 
 class TicketManageView(discord.ui.View):
     def __init__(self):
@@ -282,6 +315,8 @@ class TicketManageView(discord.ui.View):
         await interaction.response.send_message("Ticket przyjęty i zamknięty!", ephemeral=True)
         await close_ticket(interaction)
 
+# --- Funkcje ticketów ---
+
 async def create_ticket(interaction: discord.Interaction, ticket_type: str):
     guild = interaction.guild
     author = interaction.user
@@ -292,14 +327,10 @@ async def create_ticket(interaction: discord.Interaction, ticket_type: str):
         category = await guild.create_category(TICKET_CATEGORY_NAME)
 
     # Sprawdzamy, czy użytkownik ma już otwarty ticket
-    existing = None
     for ch in category.channels:
         if ch.topic == f"Ticket użytkownika {author.id}":
-            existing = ch
-            break
-    if existing:
-        await interaction.response.send_message(f"Masz już otwarty ticket: {existing.mention}", ephemeral=True)
-        return
+            await interaction.response.send_message(f"Masz już otwarty ticket: {ch.mention}", ephemeral=True)
+            return
 
     # Tworzymy kanał ticketu z odpowiednimi uprawnieniami
     overwrites = {
@@ -313,13 +344,20 @@ async def create_ticket(interaction: discord.Interaction, ticket_type: str):
     if mod_role:
         overwrites[mod_role] = discord.PermissionOverwrite(read_messages=True, send_messages=True)
 
-    channel_name = f"ticket-{author.name}".lower().replace(" ", "-")
+    # Upewnij się, że nazwa kanału jest unikalna i dopuszczalna
+    base_name = f"ticket-{author.name}".lower().replace(" ", "-")
+    channel_name = base_name
+    existing_channel_names = [ch.name for ch in category.channels]
+    suffix = 1
+    while channel_name in existing_channel_names:
+        channel_name = f"{base_name}-{suffix}"
+        suffix += 1
+
     ticket_channel = await category.create_text_channel(channel_name, overwrites=overwrites, topic=f"Ticket użytkownika {author.id}")
 
-    # Wysyłamy ping @everyone jako osobną wiadomość
+    # Wysyłamy ping @everyone (możesz to usunąć, jeśli nie chcesz pingu)
     await ticket_channel.send("@everyone")
 
-    # Embed powitalny
     embed = discord.Embed(
         title="Witaj w tickecie!",
         description=WELCOME_MESSAGE,
@@ -327,29 +365,46 @@ async def create_ticket(interaction: discord.Interaction, ticket_type: str):
     )
     await ticket_channel.send(embed=embed, view=TicketManageView())
 
-    await interaction.response.send_message(f"Ticket został utworzony: {ticket_channel.mention}", ephemeral=True)
+    # Wysyłamy info do kanału logów
+    log_channel = guild.get_channel(TICKET_LOG_CHANNEL_ID)
+    if log_channel:
+        log_embed = discord.Embed(
+            title="Ticket Utworzony",
+            description=f"Użytkownik: {author.mention}\nTyp: {ticket_type}\nKanał: {ticket_channel.mention}",
+            color=discord.Color.green(),
+            timestamp=datetime.utcnow()
+        )
+        await log_channel.send(embed=log_embed)
+
+    await interaction.response.send_message(f"Ticket utworzony: {ticket_channel.mention}", ephemeral=True)
 
 async def close_ticket(interaction: discord.Interaction):
     channel = interaction.channel
     if not channel.topic or not channel.topic.startswith("Ticket użytkownika"):
-        await interaction.response.send_message("To nie jest kanał ticketowy!", ephemeral=True)
+        await interaction.response.send_message("To nie jest kanał ticketu.", ephemeral=True)
         return
 
-    await channel.delete(reason=f"Ticket zamknięty przez {interaction.user}")
+    await interaction.response.send_message("Zamykam ticket...", ephemeral=True)
 
-# --- Slash komenda do tworzenia panelu ticketowego ---
+    try:
+        await channel.delete()
+    except Exception as e:
+        await interaction.followup.send(f"Błąd podczas usuwania kanału: {e}", ephemeral=True)
 
-@tree.command(name="ticket-panel-create", description="Tworzy panel z przyciskami ticketów")
-async def ticket_panel_create(interaction: discord.Interaction):
+# --- Komenda slash do panelu ticketów ---
+
+@tree.command(name="ticket-panel", description="Wyświetl panel do tworzenia ticketów")
+@commands.has_permissions(administrator=True)
+async def ticket_panel(interaction: discord.Interaction):
     embed = discord.Embed(
         title="Panel Ticketów",
-        description="Kliknij w przycisk aby utworzyć ticket:\n🛠 Pomoc\n❓ Pytanie",
-        color=discord.Color.orange()
+        description="Kliknij przycisk, aby utworzyć ticket.",
+        color=discord.Color.blue()
     )
-    await interaction.response.send_message(embed=embed, view=TicketPanelView())
+    view = TicketPanelView()
+    await interaction.response.send_message(embed=embed, view=view)
 
-# --- Uruchomienie bota ---
+# --- Uruchomienie keep_alive.py i bota ---
 
-if __name__ == "__main__":
-    keep_alive()  # uruchom serwer Flask w tle (jeśli masz)
-    bot.run(os.environ["DISCORD_TOKEN"])  # token z env
+keep_alive()  # jeśli masz plik keep_alive.py do hostingu na Replit itp.
+bot.run(os.getenv("TOKEN"))

@@ -1,0 +1,75 @@
+[2025-06-14 23:00:10] [WARNING] PyNaCl is not installed, voice will NOT be supported
+[2025-06-14 23:00:10] [WARNING] Privileged message content intent is missing, commands may not work as expected.
+[2025-06-14 23:00:10] [INFO] logging in using static token
+[2025-06-14 23:00:10] [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://172.31.128.18:8080
+[2025-06-14 23:00:10] [INFO] [33mPress CTRL+C to quit[0m
+[2025-06-14 23:00:12] [INFO] 172.31.128.18 - - [14/Jun/2025 23:00:12] "GET / HTTP/1.1" 200 -
+[2025-06-14 23:00:12] [INFO] Shard ID None has connected to Gateway (Session ID: 9dd2c63fc95b6c0a3fd2b318a52f88cf).
+[2025-06-14 23:00:58] [INFO] 172.31.128.18 - - [14/Jun/2025 23:00:58] "GET / HTTP/1.1" 200 -
+[2025-06-14 23:00:59] [INFO] 172.31.128.18 - - [14/Jun/2025 23:00:59] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+[2025-06-14 23:01:33] [INFO] 172.31.128.18 - - [14/Jun/2025 23:01:33] "HEAD / HTTP/1.1" 200 -
+[2025-06-14 23:06:02] [INFO] 172.31.128.18 - - [14/Jun/2025 23:06:02] "GET / HTTP/1.1" 200 -
+[2025-06-14 23:06:13] [INFO] 172.31.128.18 - - [14/Jun/2025 23:06:13] "GET / HTTP/1.1" 200 -
+[2025-06-14 23:06:17] [INFO] 172.31.128.18 - - [14/Jun/2025 23:06:17] "GET / HTTP/1.1" 200 -
+[2025-06-14 23:06:36] [INFO] 172.31.128.18 - - [14/Jun/2025 23:06:36] "HEAD / HTTP/1.1" 200 -
+[2025-06-14 23:13:33] [WARNING] PyNaCl is not installed, voice will NOT be supported
+[2025-06-14 23:13:33] [WARNING] Privileged message content intent is missing, commands may not work as expected.
+[2025-06-14 23:13:33] [INFO] logging in using static token
+[2025-06-14 23:13:33] [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://172.31.128.16:8080
+[2025-06-14 23:13:33] [INFO] [33mPress CTRL+C to quit[0m
+[2025-06-14 23:13:34] [INFO] Shard ID None has connected to Gateway (Session ID: 1d279fa8b96612e005d6d5374090d444).
+[2025-06-14 23:13:34] [INFO] 172.31.128.16 - - [14/Jun/2025 23:13:34] "GET / HTTP/1.1" 200 -
+[2025-06-14 23:19:54] [WARNING] PyNaCl is not installed, voice will NOT be supported
+[2025-06-14 23:19:54] [WARNING] Privileged message content intent is missing, commands may not work as expected.
+[2025-06-14 23:19:54] [INFO] logging in using static token
+[2025-06-14 23:19:54] [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://172.31.128.16:8080
+[2025-06-14 23:19:54] [INFO] [33mPress CTRL+C to quit[0m
+[2025-06-14 23:19:56] [WARNING] PyNaCl is not installed, voice will NOT be supported
+[2025-06-14 23:19:56] [WARNING] Privileged message content intent is missing, commands may not work as expected.
+[2025-06-14 23:19:56] [INFO] logging in using static token
+[2025-06-14 23:19:56] [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://172.31.128.16:8080
+[2025-06-14 23:19:56] [INFO] [33mPress CTRL+C to quit[0m
+[2025-06-14 23:19:57] [INFO] Shard ID None has connected to Gateway (Session ID: 68f036a4db18717314d41b2bddfa9b4a).
+[2025-06-14 23:19:57] [INFO] 172.31.128.16 - - [14/Jun/2025 23:19:57] "GET / HTTP/1.1" 200 -
+[2025-06-14 23:20:00] [INFO] 172.31.128.16 - - [14/Jun/2025 23:20:00] "GET / HTTP/1.1" 200 -
+[2025-06-14 23:22:11] [WARNING] PyNaCl is not installed, voice will NOT be supported
+[2025-06-14 23:22:11] [WARNING] Privileged message content intent is missing, commands may not work as expected.
+[2025-06-14 23:22:11] [INFO] logging in using static token
+[2025-06-14 23:22:11] [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://172.31.128.16:8080
+[2025-06-14 23:22:11] [INFO] [33mPress CTRL+C to quit[0m
+[2025-06-14 23:22:11] [INFO] 172.31.128.16 - - [14/Jun/2025 23:22:11] "GET / HTTP/1.1" 200 -
+[2025-06-14 23:22:12] [INFO] Shard ID None has connected to Gateway (Session ID: fc68bf1835752337cb8004da53e944d1).
+[2025-06-14 23:22:27] [INFO] 172.31.128.16 - - [14/Jun/2025 23:22:27] "HEAD / HTTP/1.1" 200 -
+[2025-06-14 23:24:31] [WARNING] PyNaCl is not installed, voice will NOT be supported
+[2025-06-14 23:24:31] [WARNING] Privileged message content intent is missing, commands may not work as expected.
+[2025-06-14 23:24:31] [INFO] logging in using static token
+[2025-06-14 23:24:31] [INFO] [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8080
+ * Running on http://172.31.128.16:8080
+[2025-06-14 23:24:31] [INFO] [33mPress CTRL+C to quit[0m
+[2025-06-14 23:24:31] [INFO] 172.31.128.16 - - [14/Jun/2025 23:24:31] "GET / HTTP/1.1" 200 -
+[2025-06-14 23:24:32] [INFO] Shard ID None has connected to Gateway (Session ID: 9ac39e712e124f14f4b3628193079cdc).
+[2025-06-14 23:25:10] [INFO] 172.31.128.16 - - [14/Jun/2025 23:25:10] "GET / HTTP/1.1" 200 -
+[2025-06-14 23:25:10] [INFO] 172.31.128.16 - - [14/Jun/2025 23:25:10] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+[2025-06-14 23:26:45] [INFO] 172.31.128.16 - - [14/Jun/2025 23:26:45] "GET / HTTP/1.1" 200 -
+[2025-06-14 23:27:05] [INFO] 172.31.128.16 - - [14/Jun/2025 23:27:05] "HEAD / HTTP/1.1" 200 -
+[2025-06-14 23:27:28] [INFO] 172.31.128.16 - - [14/Jun/2025 23:27:28] "HEAD / HTTP/1.1" 200 -
+[2025-06-14 23:27:32] [INFO] 172.31.128.16 - - [14/Jun/2025 23:27:32] "HEAD / HTTP/1.1" 200 -
+[2025-06-14 23:28:04] [INFO] 172.31.128.16 - - [14/Jun/2025 23:28:04] "HEAD / HTTP/1.1" 200 -
+[2025-06-14 23:29:00] [INFO] 172.31.128.16 - - [14/Jun/2025 23:29:00] "HEAD / HTTP/1.1" 200 -

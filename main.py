@@ -8,9 +8,7 @@ import logging
 
 from keep_alive import keep_alive  # import keep_alive z keep_alive.py
 
-keep_alive()
-
-# Konfiguracja loggera
+# --- Konfiguracja loggera ---
 logging.basicConfig(
     filename='logsy_bot.txt',
     level=logging.INFO,
@@ -18,17 +16,19 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 
-
+# --- Intents ---
 intents = discord.Intents.default()
 intents.members = True
+intents.message_content = True  # potrzebne do reakcji na wiadomości i przyciski
 
+# --- Bot i Tree ---
 bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree
 
+# --- Stałe i zmienne globalne ---
 LOG_CHANNEL_ID = 1383475893128663232
 DATA_FILE = "invite_data.json"
-
-AUTO_ROLE_ID = 1383499862003159242  # zmień na swoje ID roli
+AUTO_ROLE_ID = 1383499862003159242  # podmień na swoje ID roli
 
 invite_counts = {}
 leave_counts = {}
@@ -38,6 +38,8 @@ bonus_counts = {}
 user_invites = {}
 
 cached_invites = {}
+
+# --- Funkcje do zapisu i odczytu danych ---
 
 def load_data():
     global invite_counts, leave_counts, fake_counts, bonus_counts, user_invites
@@ -81,6 +83,8 @@ def save_data():
     }
     with open(DATA_FILE, "w") as f:
         json.dump(data, f, indent=4)
+
+# --- Eventy bota ---
 
 @bot.event
 async def on_ready():
@@ -160,6 +164,8 @@ async def on_member_remove(member):
     leave_counts[member.id] = leave_counts.get(member.id, 0) + 1
     save_data()
 
+# --- Komendy ---
+
 @bot.command(name="invites")
 async def invites(ctx, member: discord.Member = None):
     member = member or ctx.author
@@ -238,7 +244,112 @@ async def invites_list(interaction: discord.Interaction, member: discord.Member 
     for chunk in chunks[1:]:
         await interaction.followup.send("\n".join(chunk))
 
+# --- System Ticketów ---
+
+TICKET_CATEGORY_NAME = "Tickety"  # Nazwa kategorii ticketów
+WELCOME_MESSAGE = (
+    "Witaj w tickecie! Napisz tu swój problem lub pytanie. "
+    "I poczekaj aż administracja odpisze."
+)
+TICKET_LOG_CHANNEL_ID = LOG_CHANNEL_ID  # Możesz tu podać inny kanał
+
+class TicketPanelView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        self.add_item(discord.ui.Button(style=discord.ButtonStyle.primary, emoji="🛠", label="Pomoc", custom_id="ticket_help"))
+        self.add_item(discord.ui.Button(style=discord.ButtonStyle.secondary, emoji="❓", label="Pytanie", custom_id="ticket_question"))
+
+    @discord.ui.button(style=discord.ButtonStyle.primary, emoji="🛠", label="Pomoc", custom_id="ticket_help")
+    async def help_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await create_ticket(interaction, "pomoc")
+
+    @discord.ui.button(style=discord.ButtonStyle.secondary, emoji="❓", label="Pytanie", custom_id="ticket_question")
+    async def question_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await create_ticket(interaction, "pytanie")
+
+class TicketManageView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+        self.add_item(discord.ui.Button(style=discord.ButtonStyle.danger, label="Zamknij", custom_id="ticket_close"))
+        self.add_item(discord.ui.Button(style=discord.ButtonStyle.success, label="Przyjmij + Zamknij", custom_id="ticket_accept_close"))
+
+    @discord.ui.button(style=discord.ButtonStyle.danger, label="Zamknij", custom_id="ticket_close")
+    async def close_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await close_ticket(interaction)
+
+    @discord.ui.button(style=discord.ButtonStyle.success, label="Przyjmij + Zamknij", custom_id="ticket_accept_close")
+    async def accept_close_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message("Ticket przyjęty i zamknięty!", ephemeral=True)
+        await close_ticket(interaction)
+
+async def create_ticket(interaction: discord.Interaction, ticket_type: str):
+    guild = interaction.guild
+    author = interaction.user
+
+    # Szukamy kategorii lub tworzymy ją, jeśli nie istnieje
+    category = discord.utils.get(guild.categories, name=TICKET_CATEGORY_NAME)
+    if category is None:
+        category = await guild.create_category(TICKET_CATEGORY_NAME)
+
+    # Sprawdzamy, czy użytkownik ma już otwarty ticket
+    existing = None
+    for ch in category.channels:
+        if ch.topic == f"Ticket użytkownika {author.id}":
+            existing = ch
+            break
+    if existing:
+        await interaction.response.send_message(f"Masz już otwarty ticket: {existing.mention}", ephemeral=True)
+        return
+
+    # Tworzymy kanał ticketu z odpowiednimi uprawnieniami
+    overwrites = {
+        guild.default_role: discord.PermissionOverwrite(read_messages=False),
+        author: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+        guild.me: discord.PermissionOverwrite(read_messages=True, send_messages=True),
+    }
+
+    # Dodaj rolę moderatora, jeśli jest
+    mod_role = discord.utils.get(guild.roles, name="Mod")
+    if mod_role:
+        overwrites[mod_role] = discord.PermissionOverwrite(read_messages=True, send_messages=True)
+
+    channel_name = f"ticket-{author.name}".lower().replace(" ", "-")
+    ticket_channel = await category.create_text_channel(channel_name, overwrites=overwrites, topic=f"Ticket użytkownika {author.id}")
+
+    # Wysyłamy ping @everyone jako osobną wiadomość
+    await ticket_channel.send("@everyone")
+
+    # Embed powitalny
+    embed = discord.Embed(
+        title="Witaj w tickecie!",
+        description=WELCOME_MESSAGE,
+        color=discord.Color.orange()
+    )
+    await ticket_channel.send(embed=embed, view=TicketManageView())
+
+    await interaction.response.send_message(f"Ticket został utworzony: {ticket_channel.mention}", ephemeral=True)
+
+async def close_ticket(interaction: discord.Interaction):
+    channel = interaction.channel
+    if not channel.topic or not channel.topic.startswith("Ticket użytkownika"):
+        await interaction.response.send_message("To nie jest kanał ticketowy!", ephemeral=True)
+        return
+
+    await channel.delete(reason=f"Ticket zamknięty przez {interaction.user}")
+
+# --- Slash komenda do tworzenia panelu ticketowego ---
+
+@tree.command(name="ticket-panel-create", description="Tworzy panel z przyciskami ticketów")
+async def ticket_panel_create(interaction: discord.Interaction):
+    embed = discord.Embed(
+        title="Panel Ticketów",
+        description="Kliknij w przycisk aby utworzyć ticket:\n🛠 Pomoc\n❓ Pytanie",
+        color=discord.Color.orange()
+    )
+    await interaction.response.send_message(embed=embed, view=TicketPanelView())
+
+# --- Uruchomienie bota ---
 
 if __name__ == "__main__":
-    keep_alive()  # uruchom serwer Flask w tle
-    bot.run(os.environ["DISCORD_TOKEN"])  # używa tokena z secretów Replit
+    keep_alive()  # uruchom serwer Flask w tle (jeśli masz)
+    bot.run(os.environ["DISCORD_TOKEN"])  # token z env

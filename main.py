@@ -132,15 +132,15 @@ async def on_member_join(member):
     member_count = member.guild.member_count
 
     embed = discord.Embed(
-        title="`🥖` Nowy Członek",
+        title="`🟪` Nowy Członek",
         description=(
-            f"👋🏻Witamy na **Imperium Kebabów**\n"
+            f"👋🏻Witamy na **1337xVault**\n"
             f"👤Nazwa Użytkownika: **{member}**\n"
             f"📅Konto założone: <t:{account_creation_timestamp}:F>\n"
             f"⏰Dołączył/a: <t:{int(member.joined_at.timestamp())}:R>\n"
             f"👥Aktualnie jest nas: **{member_count}**\n"
         ),
-        color=discord.Color(0xFFA500)
+        color=discord.Color(0x8A2BE2)
     )
 
     embed.set_thumbnail(url=member.avatar.url if member.avatar else member.default_avatar.url)

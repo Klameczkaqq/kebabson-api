@@ -407,4 +407,4 @@ async def ticket_panel(interaction: discord.Interaction):
 # --- Uruchomienie keep_alive.py i bota ---
 
 keep_alive()  # jeśli masz plik keep_alive.py do hostingu na Replit itp.
-bot.run(os.getenv("TOKEN"))
+bot.run(os.getenv("DISCORD_TOKEN"))

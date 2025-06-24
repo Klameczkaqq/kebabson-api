@@ -26,9 +26,9 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 tree = bot.tree
 
 # --- Stałe i zmienne globalne ---
-LOG_CHANNEL_ID = 1383475893128663232
+LOG_CHANNEL_ID = 1386884931262746634
 DATA_FILE = "invite_data.json"
-AUTO_ROLE_ID = 1383499862003159242  # podmień na swoje ID roli
+AUTO_ROLE_ID = 1386884843719233729  # podmień na swoje ID roli
 
 invite_counts = {}
 leave_counts = {}
